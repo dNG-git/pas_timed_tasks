@@ -153,7 +153,7 @@ Update the timestamp for the next "run()" call.
 			if (timestamp > 0):
 			#
 				timeout = round(1 + (timestamp - time()))
-				if (timeout < 0): timeout = 0
+				timeout = (0 if (timeout < 0) else int(timeout))
 			#
 			else: timeout = 0
 
@@ -190,25 +190,6 @@ Update the timestamp for the next "run()" call.
 		#
 	#
 
-	def return_instance(self):
-	#
-		"""
-The last "return_instance()" call will free the singleton reference.
-
-:since: v0.1.00
-		"""
-
-		direct_abstract_timed_tasks.synchronized.acquire()
-
-		if (direct_abstract_timed_tasks != None):
-		#
-			if (direct_abstract_timed_tasks.ref_count > 0): direct_abstract_timed_tasks.ref_count -= 1
-			if (direct_abstract_timed_tasks.ref_count == 0): direct_abstract_timed_tasks.instance = None
-		#
-
-		direct_abstract_timed_tasks.synchronized.release()
-	#
-
 	def start(self):
 	#
 		"""
@@ -242,28 +223,6 @@ Stop the timed tasks implementation.
 		#
 
 		direct_abstract_timed_tasks.synchronized.release()
-	#
-
-	@staticmethod
-	def get_instance(count = True):
-	#
-		"""
-Get the log_handler singleton.
-
-:param count: Count "get()" request
-
-:return: (direct_abstract_timed_tasks) Object on success
-:since:  v0.1.00
-		"""
-
-		direct_abstract_timed_tasks.synchronized.acquire()
-
-		if (direct_abstract_timed_tasks.instance == None): direct_abstract_timed_tasks.instance = direct_abstract_timed_tasks()
-		if (count): direct_abstract_timed_tasks.ref_count += 1
-
-		direct_abstract_timed_tasks.synchronized.release()
-
-		return direct_abstract_timed_tasks.instance
 	#
 #
 
