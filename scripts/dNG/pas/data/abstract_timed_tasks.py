@@ -47,7 +47,7 @@ Timed tasks
 :author:     direct Netware Group
 :copyright:  (C) direct Netware Group - All rights reserved
 :package:    pas
-:subpackage: tag_parser
+:subpackage: timed_tasks
 :since:      v0.1.00
 :license:    http://www.direct-netware.de/redirect.py?licenses;gpl
              GNU General Public License 2
