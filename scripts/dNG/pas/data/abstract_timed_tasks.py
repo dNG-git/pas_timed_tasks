@@ -124,15 +124,14 @@ Worker loop
 :since:  v0.1.00
 		"""
 
-		direct_abstract_timed_tasks.synchronized.acquire()
-
-		if (self.timer_timeout != None):
+		with direct_abstract_timed_tasks.synchronized:
 		#
-			self.timer_timeout = -1
-			self.update_timestamp()
+			if (self.timer_timeout != None):
+			#
+				self.timer_timeout = -1
+				self.update_timestamp()
+			#
 		#
-
-		direct_abstract_timed_tasks.synchronized.release()
 	#
 
 	def update_timestamp(self, timestamp = -1):
@@ -147,46 +146,46 @@ Update the timestamp for the next "run()" call.
 
 		if (self.timer_timeout != None):
 		#
-			direct_abstract_timed_tasks.synchronized.acquire()
-			if (timestamp < 0): timestamp = self.get_update_next_timestamp()
-
-			if (timestamp > 0):
+			with direct_abstract_timed_tasks.synchronized:
 			#
-				timeout = round(1 + (timestamp - time()))
-				timeout = (0 if (timeout < 0) else int(timeout))
-			#
-			else: timeout = 0
+				if (timestamp < 0): timestamp = self.get_update_next_timestamp()
 
-			if (timestamp < 0):
-			#
-				if (self.timer != None and self.timer.is_alive()):
+				if (timestamp > 0):
 				#
-					self.timer.cancel()
-					self.timer_timeout = -1
+					timeout = round(1 + (timestamp - time()))
+					timeout = (0 if (timeout < 0) else int(timeout))
 				#
-			#
-			elif (self.timer_timeout < 0 or timeout < self.timer_timeout):
-			#
-				if (timeout > 0):
-				#
-					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
-					self.timer = Timer(timeout, self.run)
-					self.timer.start()
+				else: timeout = 0
 
-					if (self.log_handler != None): self.log_handler.debug("pas.timed_tasks waits for {0:d} seconds".format(timeout))
+				if (timestamp < 0):
 				#
-				else:
+					if (self.timer != None and self.timer.is_alive()):
+					#
+						self.timer.cancel()
+						self.timer_timeout = -1
+					#
 				#
-					if (self.log_handler != None): self.log_handler.debug("pas.timed_tasks continues with the next step")
+				elif (self.timer_timeout < 0 or timeout < self.timer_timeout):
+				#
+					if (timeout > 0):
+					#
+						if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+						self.timer = Timer(timeout, self.run)
+						self.timer.start()
 
-					py_thread = Thread(target = self.run)
-					py_thread.start()
-				#
+						if (self.log_handler != None): self.log_handler.debug("pas.timed_tasks waits for {0:d} seconds".format(timeout))
+					#
+					else:
+					#
+						if (self.log_handler != None): self.log_handler.debug("pas.timed_tasks continues with the next step")
 
-				self.timer_timeout = timeout
+						py_thread = Thread(target = self.run)
+						py_thread.start()
+					#
+
+					self.timer_timeout = timeout
+				#
 			#
-
-			direct_abstract_timed_tasks.synchronized.release()
 		#
 	#
 
@@ -198,9 +197,10 @@ Start the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		direct_abstract_timed_tasks.synchronized.acquire()
-		if (self.timer_timeout == None): self.timer_timeout = -1
-		direct_abstract_timed_tasks.synchronized.release()
+		with direct_abstract_timed_tasks.synchronized:
+		#
+			if (self.timer_timeout == None): self.timer_timeout = -1
+		#
 	#
 
 	def stop(self):
@@ -213,16 +213,15 @@ Stop the timed tasks implementation.
 
 		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -timedTasks.stop()- (#echo(__LINE__)#)")
 
-		direct_abstract_timed_tasks.synchronized.acquire()
-
-		if (self.timer_timeout != None):
+		with direct_abstract_timed_tasks.synchronized:
 		#
-			if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
-			self.timer = None
-			self.timer_timeout = None
+			if (self.timer_timeout != None):
+			#
+				if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+				self.timer = None
+				self.timer_timeout = None
+			#
 		#
-
-		direct_abstract_timed_tasks.synchronized.release()
 	#
 #
 
