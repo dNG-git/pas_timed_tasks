@@ -101,7 +101,7 @@ Destructor __del__(direct_abstract_timed_tasks)
 		if (self.log_handler != None): self.log_handler.return_instance()
 	#
 
-	def get_update_next_timestamp(self):
+	def get_next_update_timestamp(self):
 	#
 		"""
 Get the implementation specific next "run()" UNIX timestamp.
@@ -109,7 +109,7 @@ Get the implementation specific next "run()" UNIX timestamp.
 :access: protected
 :return: (int) UNIX timestamp; -1 if no further "run()" is required at the
          moment
-:since:  v0.1.00
+:since:  v0.1.01
 		"""
 
 		raise RuntimeError("Not implemented", 38)
@@ -148,7 +148,7 @@ Update the timestamp for the next "run()" call.
 		#
 			with direct_abstract_timed_tasks.synchronized:
 			#
-				if (timestamp < 0): timestamp = self.get_update_next_timestamp()
+				if (timestamp < 0): timestamp = self.get_next_update_timestamp()
 
 				if (timestamp > 0):
 				#
@@ -189,10 +189,13 @@ Update the timestamp for the next "run()" call.
 		#
 	#
 
-	def start(self):
+	def start(self, params = None, last_return = None):
 	#
 		"""
 Start the timed tasks implementation.
+
+:param params: Parameter specified
+:param last_return: The return value from the last hook called.
 
 :since: v0.1.00
 		"""
@@ -203,10 +206,13 @@ Start the timed tasks implementation.
 		#
 	#
 
-	def stop(self):
+	def stop(self, params = None, last_return = None):
 	#
 		"""
 Stop the timed tasks implementation.
+
+:param params: Parameter specified
+:param last_return: The return value from the last hook called.
 
 :since: v0.1.00
 		"""
