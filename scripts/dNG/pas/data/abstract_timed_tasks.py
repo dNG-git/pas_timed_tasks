@@ -2,7 +2,7 @@
 ##j## BOF
 
 """
-dNG.pas.data.abstract_timed_tasks
+dNG.pas.data.AbstractTimedTasks
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ NOTE_END //n"""
 from threading import RLock, Timer, Thread
 from time import time
 
-class direct_abstract_timed_tasks(object):
+class AbstractTimedTasks(object):
 #
 	"""
 Timed tasks 
@@ -69,7 +69,7 @@ Lock used in multi thread environments.
 	def __init__(self):
 	#
 		"""
-Constructor __init__(direct_abstract_timed_tasks)
+Constructor __init__(AbstractTimedTasks)
 
 :since: v0.1.00
 		"""
@@ -92,12 +92,12 @@ UNIX timestamp of the next element
 	def __del__(self):
 	#
 		"""
-Destructor __del__(direct_abstract_timed_tasks)
+Destructor __del__(AbstractTimedTasks)
 
 :since: v0.1.00
 		"""
 
-		direct_abstract_timed_tasks.stop(self)
+		AbstractTimedTasks.stop(self)
 		if (self.log_handler != None): self.log_handler.return_instance()
 	#
 
@@ -124,7 +124,7 @@ Worker loop
 :since:  v0.1.00
 		"""
 
-		with direct_abstract_timed_tasks.synchronized:
+		with AbstractTimedTasks.synchronized:
 		#
 			if (self.timer_timeout != None):
 			#
@@ -142,11 +142,11 @@ Update the timestamp for the next "run()" call.
 :since: v0.1.00
 		"""
 
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -timedTasks.update_timestamp({0:d})- (#echo(__LINE__)#)".format(timestamp))
+		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -TimedTasks.update_timestamp({0:d})- (#echo(__LINE__)#)".format(timestamp))
 
 		if (self.timer_timeout != None):
 		#
-			with direct_abstract_timed_tasks.synchronized:
+			with AbstractTimedTasks.synchronized:
 			#
 				if (timestamp < 0): timestamp = self.get_next_update_timestamp()
 
@@ -200,7 +200,7 @@ Start the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		with direct_abstract_timed_tasks.synchronized:
+		with AbstractTimedTasks.synchronized:
 		#
 			if (self.timer_timeout == None): self.timer_timeout = -1
 		#
@@ -217,9 +217,9 @@ Stop the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -timedTasks.stop()- (#echo(__LINE__)#)")
+		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -TimedTasks.stop()- (#echo(__LINE__)#)")
 
-		with direct_abstract_timed_tasks.synchronized:
+		with AbstractTimedTasks.synchronized:
 		#
 			if (self.timer_timeout != None):
 			#
