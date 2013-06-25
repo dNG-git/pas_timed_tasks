@@ -53,14 +53,6 @@ Timed tasks
              GNU General Public License 2
 	"""
 
-	instance = None
-	"""
-ControlPoint instance
-	"""
-	ref_count = 0
-	"""
-Instances used
-	"""
 	synchronized = RLock()
 	"""
 Lock used in multi thread environments.
@@ -98,7 +90,6 @@ Destructor __del__(AbstractTimedTasks)
 		"""
 
 		AbstractTimedTasks.stop(self)
-		if (self.log_handler != None): self.log_handler.return_instance()
 	#
 
 	def get_next_update_timestamp(self):
