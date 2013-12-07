@@ -2,7 +2,7 @@
 ##j## BOF
 
 """
-dNG.pas.data.tasks.AbstractTimed
+dNG.pas.tasks.AbstractTimed
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -36,13 +36,18 @@ http://www.direct-netware.de/redirect.py?licenses;gpl
 ----------------------------------------------------------------------------
 NOTE_END //n"""
 
-from threading import RLock, Timer, Thread
+from threading import Timer
 from time import time
+
+from dNG.pas.data.traced_exception import TracedException
+from dNG.pas.plugins.hooks import Hooks
+from dNG.pas.runtime.instance_lock import InstanceLock
+from dNG.pas.runtime.thread import Thread
 
 class AbstractTimed(object):
 #
 	"""
-Timed tasks 
+Timed tasks provides an abstract, time ascending sorting scheduler.
 
 :author:     direct Netware Group
 :copyright:  (C) direct Netware Group - All rights reserved
@@ -53,9 +58,9 @@ Timed tasks
              GNU General Public License 2
 	"""
 
-	synchronized = RLock()
+	lock = InstanceLock()
 	"""
-Lock used in multi thread environments.
+Thread safety lock
 	"""
 
 	def __init__(self):
@@ -68,14 +73,18 @@ Constructor __init__(AbstractTimed)
 
 		self.log_handler = None
 		"""
-The log_handler is called whenever debug messages should be logged or errors
+The LogHandler is called whenever debug messages should be logged or errors
 happened.
 		"""
 		self.timer = None
 		"""
 "Timer" instance
 		"""
-		self.timer_timeout = None
+		self.timer_active = False
+		"""
+UNIX timestamp of the next element
+		"""
+		self.timer_timeout = -1
 		"""
 UNIX timestamp of the next element
 		"""
@@ -89,7 +98,7 @@ Destructor __del__(AbstractTimed)
 :since: v0.1.00
 		"""
 
-		AbstractTimed.stop(self)
+		self.stop()
 	#
 
 	def _get_next_update_timestamp(self):
@@ -102,7 +111,7 @@ Get the implementation specific next "run()" UNIX timestamp.
 :since:  v0.1.01
 		"""
 
-		raise RuntimeError("Not implemented", 38)
+		raise TracedException("Not implemented")
 	#
 
 	def run(self):
@@ -113,10 +122,11 @@ Worker loop
 :since: v0.1.00
 		"""
 
-		with AbstractTimed.synchronized:
+		with AbstractTimed.lock:
 		#
-			if (self.timer_timeout != None):
+			if (self.timer_active):
 			#
+				self.timer_active = True
 				self.timer_timeout = -1
 				self.update_timestamp()
 			#
@@ -128,21 +138,25 @@ Worker loop
 		"""
 Update the timestamp for the next "run()" call.
 
+:param timestamp: Externally defined UNIX timestamp of the next scheduled
+                  run.
+
 :since: v0.1.00
 		"""
 
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -TimedTasks.update_timestamp({0:d})- (#echo(__LINE__)#)".format(timestamp))
+		if (timestamp != -1): timestamp = int(timestamp)
+		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)".format(self, timestamp))
 
-		if (self.timer_timeout != None):
+		if (self.timer_active):
 		#
-			with AbstractTimed.synchronized:
+			with AbstractTimed.lock:
 			#
 				if (timestamp < 0): timestamp = self._get_next_update_timestamp()
 
 				if (timestamp > 0):
 				#
-					timeout = round(1 + (timestamp - time()))
-					timeout = (0 if (timeout < 0) else int(timeout))
+					timeout = timestamp - int(time())
+					timeout = (0 if (timeout < 0) else timeout)
 				#
 				else: timeout = 0
 
@@ -162,14 +176,14 @@ Update the timestamp for the next "run()" call.
 						self.timer = Timer(timeout, self.run)
 						self.timer.start()
 
-						if (self.log_handler != None): self.log_handler.debug("pas.TimedTasks waits for {0:d} seconds".format(timeout))
+						if (self.log_handler != None): self.log_handler.debug("{0!r} waits for {1:d} seconds".format(self, timeout))
 					#
 					else:
 					#
-						if (self.log_handler != None): self.log_handler.debug("pas.TimedTasks continues with the next step")
+						if (self.log_handler != None): self.log_handler.debug("{0!r} continues with the next step".format(self))
 
-						_thread = Thread(target = self.run)
-						_thread.start()
+						thread = Thread(target = self.run)
+						thread.start()
 					#
 
 					self.timer_timeout = timeout
@@ -189,9 +203,16 @@ Start the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		with AbstractTimed.synchronized:
+		with AbstractTimed.lock:
 		#
-			if (self.timer_timeout == None): self.timer_timeout = -1
+			if (not self.timer_active):
+			#
+				Hooks.register("dNG.pas.Status.shutdown", self.stop)
+
+				self.timer_active = True
+				self.timer_timeout = -1
+				self.update_timestamp()
+			#
 		#
 	#
 
@@ -206,15 +227,17 @@ Stop the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -TimedTasks.stop()- (#echo(__LINE__)#)")
-
-		with AbstractTimed.synchronized:
+		with AbstractTimed.lock:
 		#
-			if (self.timer_timeout != None):
+			if (self.timer_active):
 			#
+				if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
+
 				if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
 				self.timer = None
-				self.timer_timeout = None
+				self.timer_active = False
+
+				Hooks.unregister("dNG.pas.Status.shutdown", self.stop)
 			#
 		#
 	#
