@@ -39,9 +39,9 @@ NOTE_END //n"""
 from threading import Timer
 from time import time
 
-from dNG.pas.data.traced_exception import TracedException
 from dNG.pas.plugins.hooks import Hooks
 from dNG.pas.runtime.instance_lock import InstanceLock
+from dNG.pas.runtime.not_implemented_exception import NotImplementedException
 from dNG.pas.runtime.thread import Thread
 
 class AbstractTimed(object):
@@ -111,7 +111,7 @@ Get the implementation specific next "run()" UNIX timestamp.
 :since:  v0.1.01
 		"""
 
-		raise TracedException("Not implemented")
+		raise NotImplementedException()
 	#
 
 	def run(self):
