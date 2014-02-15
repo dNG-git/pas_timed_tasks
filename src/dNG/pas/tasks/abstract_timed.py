@@ -58,6 +58,8 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
              GNU General Public License 2
 	"""
 
+	# pylint: disable=unused-argument
+
 	lock = InstanceLock()
 	"""
 Thread safety lock
