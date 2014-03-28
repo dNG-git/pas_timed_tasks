@@ -116,6 +116,18 @@ Get the implementation specific next "run()" UNIX timestamp.
 		raise NotImplementedException()
 	#
 
+	def is_started(self):
+	#
+		"""
+Returns true if the timed tasks implementation has been started.
+
+:return: (bool) True if scheduling is active
+:since:  v0.1.01
+		"""
+
+		with AbstractTimed.lock: return self.timer_active
+	#
+
 	def run(self):
 	#
 		"""
