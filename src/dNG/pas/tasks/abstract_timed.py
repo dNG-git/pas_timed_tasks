@@ -125,24 +125,27 @@ Returns true if the timed tasks implementation has been started.
 :since:  v0.1.01
 		"""
 
-		with AbstractTimed.lock: return self.timer_active
+		return self.timer_active
 	#
 
 	def run(self):
 	#
 		"""
-Worker loop
+Timed task execution
 
 :since: v0.1.00
 		"""
 
-		with AbstractTimed.lock:
+		if (self.timer_active):
 		#
-			if (self.timer_active):
+			# Timer could be stopped in another thread so check again
+			with AbstractTimed.lock:
 			#
-				self.timer_active = True
-				self.timer_timeout = -1
-				self.update_timestamp()
+				if (self.timer_active):
+				#
+					self.timer_timeout = -1
+					self.update_timestamp()
+				#
 			#
 		#
 	#
@@ -217,15 +220,19 @@ Start the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		with AbstractTimed.lock:
+		if (not self.timer_active):
 		#
-			if (not self.timer_active):
+			# Timer could be activated in another thread so check again
+			with AbstractTimed.lock:
 			#
-				Hooks.register("dNG.pas.Status.shutdown", self.stop)
+				if (not self.timer_active):
+				#
+					Hooks.register("dNG.pas.Status.shutdown", self.stop)
 
-				self.timer_active = True
-				self.timer_timeout = -1
-				self.update_timestamp()
+					self.timer_active = True
+					self.timer_timeout = -1
+					self.update_timestamp()
+				#
 			#
 		#
 	#
@@ -241,17 +248,21 @@ Stop the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		with AbstractTimed.lock:
+		if (self.timer_active):
 		#
-			if (self.timer_active):
+			# Timer could be stopped in another thread so check again
+			with AbstractTimed.lock:
 			#
-				if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
+				if (self.timer_active):
+				#
+					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
 
-				if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
-				self.timer = None
-				self.timer_active = False
+					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+					self.timer = None
+					self.timer_active = False
 
-				Hooks.unregister("dNG.pas.Status.shutdown", self.stop)
+					Hooks.unregister("dNG.pas.Status.shutdown", self.stop)
+				#
 			#
 		#
 	#
