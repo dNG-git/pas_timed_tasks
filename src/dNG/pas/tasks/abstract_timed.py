@@ -39,7 +39,7 @@ NOTE_END //n"""
 from threading import Timer
 from time import time
 
-from dNG.pas.plugins.hooks import Hooks
+from dNG.pas.plugins.hook import Hook
 from dNG.pas.runtime.instance_lock import InstanceLock
 from dNG.pas.runtime.not_implemented_exception import NotImplementedException
 from dNG.pas.runtime.thread import Thread
@@ -60,7 +60,7 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 
 	# pylint: disable=unused-argument
 
-	lock = InstanceLock()
+	_lock = InstanceLock()
 	"""
 Thread safety lock
 	"""
@@ -137,14 +137,69 @@ Timed task execution
 		"""
 
 		if (self.timer_active):
-		#
-			# Timer could be stopped in another thread so check again
-			with AbstractTimed.lock:
+		# Thread safety
+			with AbstractTimed._lock:
 			#
 				if (self.timer_active):
 				#
 					self.timer_timeout = -1
 					self.update_timestamp()
+				#
+			#
+		#
+	#
+
+	def start(self, params = None, last_return = None):
+	#
+		"""
+Start the timed tasks implementation.
+
+:param params: Parameter specified
+:param last_return: The return value from the last hook called.
+
+:since: v0.1.00
+		"""
+
+		if (not self.timer_active):
+		# Thread safety
+			with AbstractTimed._lock:
+			#
+				if (not self.timer_active):
+				#
+					Hook.register("dNG.pas.Status.onShutdown", self.stop)
+
+					self.timer_active = True
+					self.timer_timeout = -1
+					self.update_timestamp()
+				#
+			#
+		#
+	#
+
+	def stop(self, params = None, last_return = None):
+	#
+		"""
+Stop the timed tasks implementation.
+
+:param params: Parameter specified
+:param last_return: The return value from the last hook called.
+
+:since: v0.1.00
+		"""
+
+		if (self.timer_active):
+		# Thread safety
+			with AbstractTimed._lock:
+			#
+				if (self.timer_active):
+				#
+					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
+
+					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+					self.timer = None
+					self.timer_active = False
+
+					Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
 				#
 			#
 		#
@@ -166,9 +221,9 @@ Update the timestamp for the next "run()" call.
 
 		if (self.timer_active):
 		#
-			with AbstractTimed.lock:
+			with AbstractTimed._lock:
 			#
-				if (timestamp < 0): timestamp = self._get_next_update_timestamp()
+				if (timestamp < 0): timestamp = int(self._get_next_update_timestamp())
 
 				if (timestamp > 0):
 				#
@@ -204,64 +259,6 @@ Update the timestamp for the next "run()" call.
 					#
 
 					self.timer_timeout = timeout
-				#
-			#
-		#
-	#
-
-	def start(self, params = None, last_return = None):
-	#
-		"""
-Start the timed tasks implementation.
-
-:param params: Parameter specified
-:param last_return: The return value from the last hook called.
-
-:since: v0.1.00
-		"""
-
-		if (not self.timer_active):
-		#
-			# Timer could be activated in another thread so check again
-			with AbstractTimed.lock:
-			#
-				if (not self.timer_active):
-				#
-					Hooks.register("dNG.pas.Status.shutdown", self.stop)
-
-					self.timer_active = True
-					self.timer_timeout = -1
-					self.update_timestamp()
-				#
-			#
-		#
-	#
-
-	def stop(self, params = None, last_return = None):
-	#
-		"""
-Stop the timed tasks implementation.
-
-:param params: Parameter specified
-:param last_return: The return value from the last hook called.
-
-:since: v0.1.00
-		"""
-
-		if (self.timer_active):
-		#
-			# Timer could be stopped in another thread so check again
-			with AbstractTimed.lock:
-			#
-				if (self.timer_active):
-				#
-					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
-
-					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
-					self.timer = None
-					self.timer_active = False
-
-					Hooks.unregister("dNG.pas.Status.shutdown", self.stop)
 				#
 			#
 		#
