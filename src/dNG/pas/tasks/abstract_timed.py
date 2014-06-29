@@ -2,10 +2,6 @@
 ##j## BOF
 
 """
-dNG.pas.tasks.AbstractTimed
-"""
-"""n// NOTE
-----------------------------------------------------------------------------
 direct PAS
 Python Application Services
 ----------------------------------------------------------------------------
@@ -33,8 +29,7 @@ http://www.direct-netware.de/redirect.py?licenses;gpl
 ----------------------------------------------------------------------------
 #echo(pasTimedTasksVersion)#
 #echo(__FILEPATH__)#
-----------------------------------------------------------------------------
-NOTE_END //n"""
+"""
 
 from threading import Timer
 from time import time
@@ -193,7 +188,7 @@ Stop the timed tasks implementation.
 			#
 				if (self.timer_active):
 				#
-					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)".format(self))
+					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
 					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
 					self.timer = None
@@ -217,7 +212,7 @@ Update the timestamp for the next "run()" call.
 		"""
 
 		if (timestamp != -1): timestamp = int(timestamp)
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)".format(self, timestamp))
+		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
 
 		if (self.timer_active):
 		#
@@ -248,11 +243,11 @@ Update the timestamp for the next "run()" call.
 						self.timer = Timer(timeout, self.run)
 						self.timer.start()
 
-						if (self.log_handler != None): self.log_handler.debug("{0!r} waits for {1:d} seconds".format(self, timeout))
+						if (self.log_handler != None): self.log_handler.debug("{0!r} waits for {1:d} seconds", self, timeout, context = "pas_timed_tasks")
 					#
 					else:
 					#
-						if (self.log_handler != None): self.log_handler.debug("{0!r} continues with the next step".format(self))
+						if (self.log_handler != None): self.log_handler.debug("{0!r} continues with the next step", self, context = "pas_timed_tasks")
 
 						thread = Thread(target = self.run)
 						thread.start()
