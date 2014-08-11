@@ -35,9 +35,9 @@ from threading import Timer
 from time import time
 
 from dNG.pas.plugins.hook import Hook
-from dNG.pas.runtime.instance_lock import InstanceLock
 from dNG.pas.runtime.not_implemented_exception import NotImplementedException
 from dNG.pas.runtime.thread import Thread
+from dNG.pas.runtime.thread_lock import ThreadLock
 
 class AbstractTimed(object):
 #
@@ -55,11 +55,6 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 
 	# pylint: disable=unused-argument
 
-	_lock = InstanceLock()
-	"""
-Thread safety lock
-	"""
-
 	def __init__(self):
 	#
 		"""
@@ -68,6 +63,10 @@ Constructor __init__(AbstractTimed)
 :since: v0.1.00
 		"""
 
+		self.lock = ThreadLock()
+		"""
+Thread safety lock
+		"""
 		self.log_handler = None
 		"""
 The LogHandler is called whenever debug messages should be logged or errors
@@ -133,7 +132,7 @@ Timed task execution
 
 		if (self.timer_active):
 		# Thread safety
-			with AbstractTimed._lock:
+			with self.lock:
 			#
 				if (self.timer_active):
 				#
@@ -157,7 +156,7 @@ Start the timed tasks implementation.
 
 		if (not self.timer_active):
 		# Thread safety
-			with AbstractTimed._lock:
+			with self.lock:
 			#
 				if (not self.timer_active):
 				#
@@ -182,21 +181,18 @@ Stop the timed tasks implementation.
 :since: v0.1.00
 		"""
 
-		if (self.timer_active):
-		# Thread safety
-			with AbstractTimed._lock:
+		with self.lock:
+		#
+			if (self.timer_active):
 			#
-				if (self.timer_active):
-				#
-					if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
+				if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
-					if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
-					self.timer = None
-					self.timer_active = False
-
-					Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
-				#
+				self.timer_active = False
+				Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
 			#
+
+			if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+			self.timer = None
 		#
 	#
 
@@ -216,16 +212,20 @@ Update the timestamp for the next "run()" call.
 
 		if (self.timer_active):
 		#
-			with AbstractTimed._lock:
-			#
-				if (timestamp < 0): timestamp = int(self._get_next_update_timestamp())
+			with self.lock:
+			# Thread safety
+				if (self.timer_active):
+				#
+					if (timestamp < 0): timestamp = int(self._get_next_update_timestamp())
 
-				if (timestamp > 0):
+					if (timestamp > 0):
+					#
+						timeout = timestamp - int(time())
+						timeout = (0 if (timeout < 0) else timeout)
+					#
+					else: timeout = 0
 				#
-					timeout = timestamp - int(time())
-					timeout = (0 if (timeout < 0) else timeout)
-				#
-				else: timeout = 0
+				else: timestamp = -1
 
 				if (timestamp < 0):
 				#
