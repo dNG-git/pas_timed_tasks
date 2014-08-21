@@ -49,7 +49,7 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 :package:    pas
 :subpackage: timed_tasks
 :since:      v0.1.00
-:license:    http://www.direct-netware.de/redirect.py?licenses;gpl
+:license:    https://www.direct-netware.de/redirect?licenses;gpl
              GNU General Public License 2
 	"""
 
