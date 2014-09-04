@@ -160,7 +160,7 @@ Start the timed tasks implementation.
 			#
 				if (not self.timer_active):
 				#
-					Hook.register("dNG.pas.Status.onShutdown", self.stop)
+					Hook.register_weakref("dNG.pas.Status.onShutdown", self.stop)
 
 					self.timer_active = True
 					self.timer_timeout = -1
