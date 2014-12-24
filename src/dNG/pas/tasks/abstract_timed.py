@@ -185,13 +185,13 @@ Stop the timed tasks implementation.
 		#
 			if (self.timer_active):
 			#
-				if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
+				if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
 				self.timer_active = False
 				Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
 			#
 
-			if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+			if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
 			self.timer = None
 		#
 	#
@@ -208,7 +208,7 @@ Update the timestamp for the next "run()" call.
 		"""
 
 		if (timestamp != -1): timestamp = int(timestamp)
-		if (self.log_handler != None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
+		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
 
 		if (self.timer_active):
 		#
@@ -229,7 +229,7 @@ Update the timestamp for the next "run()" call.
 
 				if (timestamp < 0):
 				#
-					if (self.timer != None and self.timer.is_alive()):
+					if (self.timer is not None and self.timer.is_alive()):
 					#
 						self.timer.cancel()
 						self.timer_timeout = -1
@@ -239,15 +239,15 @@ Update the timestamp for the next "run()" call.
 				#
 					if (timeout > 0):
 					#
-						if (self.timer != None and self.timer.is_alive()): self.timer.cancel()
+						if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
 						self.timer = Timer(timeout, self.run)
 						self.timer.start()
 
-						if (self.log_handler != None): self.log_handler.debug("{0!r} waits for {1:d} seconds", self, timeout, context = "pas_timed_tasks")
+						if (self.log_handler is not None): self.log_handler.debug("{0!r} waits for {1:d} seconds", self, timeout, context = "pas_timed_tasks")
 					#
 					else:
 					#
-						if (self.log_handler != None): self.log_handler.debug("{0!r} continues with the next step", self, context = "pas_timed_tasks")
+						if (self.log_handler is not None): self.log_handler.debug("{0!r} continues with the next step", self, context = "pas_timed_tasks")
 
 						thread = Thread(target = self.run)
 						thread.start()
