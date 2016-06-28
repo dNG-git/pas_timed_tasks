@@ -102,7 +102,7 @@ Destructor __del__(AbstractTimed)
 		"""
 Get the implementation specific next "run()" UNIX timestamp.
 
-:return: (int) UNIX timestamp; -1 if no further "run()" is required at the
+:return: (float) UNIX timestamp; -1 if no further "run()" is required at the
          moment
 :since:  v0.1.01
 		"""
@@ -207,8 +207,7 @@ Update the timestamp for the next "run()" call.
 :since: v0.1.00
 		"""
 
-		if (timestamp != -1): timestamp = int(timestamp)
-		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1:d})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
+		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
 
 		if (self.timer_active):
 		#
@@ -216,11 +215,11 @@ Update the timestamp for the next "run()" call.
 			# Thread safety
 				if (self.timer_active):
 				#
-					if (timestamp < 0): timestamp = int(self._get_next_update_timestamp())
+					if (timestamp < 0): timestamp = self._get_next_update_timestamp()
 
 					if (timestamp > 0):
 					#
-						timeout = timestamp - int(time())
+						timeout = timestamp - time()
 						timeout = (0 if (timeout < 0) else timeout)
 					#
 					else: timeout = 0
@@ -243,7 +242,7 @@ Update the timestamp for the next "run()" call.
 						self.timer = Timer(timeout, self.run)
 						self.timer.start()
 
-						if (self.log_handler is not None): self.log_handler.debug("{0!r} waits for {1:d} seconds", self, timeout, context = "pas_timed_tasks")
+						if (self.log_handler is not None): self.log_handler.debug("{0!r} waits for {1} seconds", self, timeout, context = "pas_timed_tasks")
 					#
 					else:
 					#
