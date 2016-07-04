@@ -80,7 +80,7 @@ happened.
 		"""
 UNIX timestamp of the next element
 		"""
-		self.timer_timeout = -1
+		self.timer_timestamp = -1
 		"""
 UNIX timestamp of the next element
 		"""
@@ -136,7 +136,7 @@ Timed task execution
 			#
 				if (self.timer_active):
 				#
-					self.timer_timeout = -1
+					self.timer_timestamp = -1
 					self.update_timestamp()
 				#
 			#
@@ -163,7 +163,7 @@ Start the timed tasks implementation.
 					Hook.register_weakref("dNG.pas.Status.onShutdown", self.stop)
 
 					self.timer_active = True
-					self.timer_timeout = -1
+					self.timer_timestamp = -1
 					self.update_timestamp()
 				#
 			#
@@ -213,6 +213,8 @@ Update the timestamp for the next "run()" call.
 		#
 			with self.lock:
 			# Thread safety
+				timeout = -1
+
 				if (self.timer_active):
 				#
 					if (timestamp < 0): timestamp = self._get_next_update_timestamp()
@@ -220,29 +222,28 @@ Update the timestamp for the next "run()" call.
 					if (timestamp > 0):
 					#
 						timeout = timestamp - time()
-						timeout = (0 if (timeout < 0) else timeout)
+						if (timeout < 0): timeout = 0
 					#
-					else: timeout = 0
 				#
-				else: timestamp = -1
 
-				if (timestamp < 0):
+				if (timeout < 0):
 				#
 					if (self.timer is not None and self.timer.is_alive()):
 					#
 						self.timer.cancel()
-						self.timer_timeout = -1
+						self.timer_timestamp = -1
 					#
 				#
-				elif (self.timer_timeout < 0 or timeout < self.timer_timeout):
+				elif (self.timer_timestamp < 0 or timestamp < self.timer_timestamp):
 				#
 					if (timeout > 0):
 					#
 						if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
 						self.timer = Timer(timeout, self.run)
-						self.timer.start()
+						self.timer_timestamp = timestamp
 
 						if (self.log_handler is not None): self.log_handler.debug("{0!r} waits for {1} seconds", self, timeout, context = "pas_timed_tasks")
+						self.timer.start()
 					#
 					else:
 					#
