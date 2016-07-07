@@ -34,21 +34,21 @@ https://www.direct-netware.de/redirect?licenses;gpl
 from threading import Timer
 from time import time
 
-from dNG.pas.plugins.hook import Hook
-from dNG.pas.runtime.not_implemented_exception import NotImplementedException
-from dNG.pas.runtime.thread import Thread
-from dNG.pas.runtime.thread_lock import ThreadLock
+from dNG.plugins.hook import Hook
+from dNG.runtime.not_implemented_exception import NotImplementedException
+from dNG.runtime.thread import Thread
+from dNG.runtime.thread_lock import ThreadLock
 
 class AbstractTimed(object):
 #
 	"""
 Timed tasks provides an abstract, time ascending sorting scheduler.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  (C) direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: timed_tasks
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;gpl
              GNU General Public License 2
 	"""
@@ -60,7 +60,7 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 		"""
 Constructor __init__(AbstractTimed)
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		self.lock = ThreadLock()
@@ -91,7 +91,7 @@ UNIX timestamp of the next element
 		"""
 Destructor __del__(AbstractTimed)
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		self.stop()
@@ -104,7 +104,7 @@ Get the implementation specific next "run()" UNIX timestamp.
 
 :return: (float) UNIX timestamp; -1 if no further "run()" is required at the
          moment
-:since:  v0.1.01
+:since:  v0.2.00
 		"""
 
 		raise NotImplementedException()
@@ -116,7 +116,7 @@ Get the implementation specific next "run()" UNIX timestamp.
 Returns true if the timed tasks implementation has been started.
 
 :return: (bool) True if scheduling is active
-:since:  v0.1.01
+:since:  v0.2.00
 		"""
 
 		return self.timer_active
@@ -127,18 +127,15 @@ Returns true if the timed tasks implementation has been started.
 		"""
 Timed task execution
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.timer_active):
 		# Thread safety
 			with self.lock:
 			#
-				if (self.timer_active):
-				#
-					self.timer_timestamp = -1
-					self.update_timestamp()
-				#
+				self.timer_timestamp = -1
+				if (self.timer_active): self.update_timestamp()
 			#
 		#
 	#
@@ -151,7 +148,7 @@ Start the timed tasks implementation.
 :param params: Parameter specified
 :param last_return: The return value from the last hook called.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (not self.timer_active):
@@ -178,7 +175,7 @@ Stop the timed tasks implementation.
 :param params: Parameter specified
 :param last_return: The return value from the last hook called.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		with self.lock:
@@ -204,7 +201,7 @@ Update the timestamp for the next "run()" call.
 :param timestamp: Externally defined UNIX timestamp of the next scheduled
                   run.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
@@ -252,8 +249,6 @@ Update the timestamp for the next "run()" call.
 						thread = Thread(target = self.run)
 						thread.start()
 					#
-
-					self.timer_timeout = timeout
 				#
 			#
 		#
