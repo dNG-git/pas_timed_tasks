@@ -223,6 +223,8 @@ Update the timestamp for the next "run()" call.
 					#
 				#
 
+				if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
+
 				if (timeout < 0):
 				#
 					if (self.timer is not None and self.timer.is_alive()):
@@ -233,9 +235,10 @@ Update the timestamp for the next "run()" call.
 				#
 				elif (self.timer_timestamp < 0 or timestamp < self.timer_timestamp):
 				#
+					if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
+
 					if (timeout > 0):
 					#
-						if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
 						self.timer = Timer(timeout, self.run)
 						self.timer_timestamp = timestamp
 
