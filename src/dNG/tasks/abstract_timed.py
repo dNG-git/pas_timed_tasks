@@ -223,8 +223,6 @@ Update the timestamp for the next "run()" call.
 					#
 				#
 
-				if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
-
 				if (timeout < 0):
 				#
 					if (self.timer is not None and self.timer.is_alive()):
