@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -31,15 +30,14 @@ setup.py
 """
 
 def get_version():
-#
-	"""
+    """
 Returns the version currently in development.
 
 :return: (str) Version string
 :since:  v0.1.02
-	"""
+    """
 
-	return "v0.2.00"
+    return "v0.2.00"
 #
 
 from dNG.distutils.command.build_py import BuildPy
@@ -50,35 +48,32 @@ from distutils.core import setup
 from os import path
 
 with TemporaryDirectory(dir = ".") as build_directory:
+    parameters = { "pasTimedTasksVersion": get_version() }
+
+    InstallData.set_build_target_path(build_directory)
+    InstallData.set_build_target_parameters(parameters)
+
+    _build_path = path.join(build_directory, "src")
+
+    setup(name = "pas_timed_tasks",
+          version = get_version(),
+          description = "Python Application Services",
+          long_description = """"pas_timed_tasks" provides an abstract time based scheduler.""",
+          author = "direct Netware Group et al.",
+          author_email = "web@direct-netware.de",
+          license = "GPLv2+",
+          url = "https://www.direct-netware.de/redirect?pas;timed_tasks",
+
+          platforms = [ "any" ],
+
+          package_dir = { "": _build_path },
+          packages = [ "dNG" ],
+
+          data_files = [ ( "docs", [ "LICENSE", "README" ]) ],
+
+          # Override build_py to first run builder.py over all PAS modules
+          cmdclass = { "build_py": BuildPy,
+                       "install_data": InstallData
+                     }
+         )
 #
-	parameters = { "pasTimedTasksVersion": get_version() }
-
-	InstallData.set_build_target_path(build_directory)
-	InstallData.set_build_target_parameters(parameters)
-
-	_build_path = path.join(build_directory, "src")
-
-	setup(name = "pas_timed_tasks",
-	      version = get_version(),
-	      description = "Python Application Services",
-	      long_description = """"pas_timed_tasks" provides an abstract time based scheduler.""",
-	      author = "direct Netware Group et al.",
-	      author_email = "web@direct-netware.de",
-	      license = "GPLv2+",
-	      url = "https://www.direct-netware.de/redirect?pas;timed_tasks",
-
-	      platforms = [ "any" ],
-
-	      package_dir = { "": _build_path },
-	      packages = [ "dNG" ],
-
-	      data_files = [ ( "docs", [ "LICENSE", "README" ]) ],
-
-	      # Override build_py to first run builder.py over all PAS modules
-	      cmdclass = { "build_py": BuildPy,
-	                   "install_data": InstallData
-	                 }
-	)
-#
-
-##j## EOF
