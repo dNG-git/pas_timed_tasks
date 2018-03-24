@@ -29,23 +29,24 @@ https://www.direct-netware.de/redirect?licenses;gpl
 setup.py
 """
 
-def get_version():
-    """
-Returns the version currently in development.
+from os import path
 
-:return: (str) Version string
-:since:  v0.1.02
-    """
-
-    return "v0.2.00"
-#
+from distutils.core import setup
 
 from dNG.distutils.command.build_py import BuildPy
 from dNG.distutils.command.install_data import InstallData
 from dNG.distutils.temporary_directory import TemporaryDirectory
 
-from distutils.core import setup
-from os import path
+def get_version():
+    """
+Returns the version currently in development.
+
+:return: (str) Version string
+:since:  v0.1.2
+    """
+
+    return "v1.0.0"
+#
 
 with TemporaryDirectory(dir = ".") as build_directory:
     parameters = { "pasTimedTasksVersion": get_version() }
@@ -65,6 +66,8 @@ with TemporaryDirectory(dir = ".") as build_directory:
           url = "https://www.direct-netware.de/redirect?pas;timed_tasks",
 
           platforms = [ "any" ],
+
+          setup_requires = "dng-builder-suite",
 
           package_dir = { "": _build_path },
           packages = [ "dNG" ],

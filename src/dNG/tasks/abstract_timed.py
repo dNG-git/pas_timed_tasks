@@ -48,7 +48,7 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 :copyright:  (C) direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: timed_tasks
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;gpl
              GNU General Public License 2
     """
@@ -59,14 +59,14 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
         """
 Constructor __init__(AbstractTimed)
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         self.lock = ThreadLock()
         """
 Thread safety lock
         """
-        self.log_handler = None
+        self._log_handler = None
         """
 The LogHandler is called whenever debug messages should be logged or errors
 happened.
@@ -89,40 +89,42 @@ UNIX timestamp of the next element
         """
 Destructor __del__(AbstractTimed)
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         self.stop()
     #
 
-    def _get_next_update_timestamp(self):
-        """
-Get the implementation specific next "run()" UNIX timestamp.
-
-:return: (float) UNIX timestamp; -1 if no further "run()" is required at the
-         moment
-:since:  v0.2.00
-        """
-
-        raise NotImplementedException()
-    #
-
+    @property
     def is_started(self):
         """
 Returns true if the timed tasks implementation has been started.
 
 :return: (bool) True if scheduling is active
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         return self.timer_active
+    #
+
+    @property
+    def _next_update_timestamp(self):
+        """
+Get the implementation specific next "run()" UNIX timestamp.
+
+:return: (float) UNIX timestamp; -1 if no further "run()" is required at the
+         moment
+:since:  v1.0.0
+        """
+
+        raise NotImplementedException()
     #
 
     def run(self):
         """
 Timed task execution
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         if (self.timer_active):
@@ -141,7 +143,7 @@ Start the timed tasks implementation.
 :param params: Parameter specified
 :param last_return: The return value from the last hook called.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         if (not self.timer_active):
@@ -165,12 +167,12 @@ Stop the timed tasks implementation.
 :param params: Parameter specified
 :param last_return: The return value from the last hook called.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         with self.lock:
             if (self.timer_active):
-                if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
+                if (self._log_handler is not None): self._log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
                 self.timer_active = False
                 Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
@@ -188,18 +190,20 @@ Update the timestamp for the next "run()" call.
 :param timestamp: Externally defined UNIX timestamp of the next scheduled
                   run.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
-        if (self.log_handler is not None): self.log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
+        if (self._log_handler is not None): self._log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
 
         if (self.timer_active):
+            thread = None
+
             with self.lock:
                 # Thread safety
                 timeout = -1
 
                 if (self.timer_active):
-                    if (timestamp < 0): timestamp = self._get_next_update_timestamp()
+                    if (timestamp < 0): timestamp = self._next_update_timestamp
 
                     if (timestamp > 0):
                         timeout = timestamp - time()
@@ -219,16 +223,17 @@ Update the timestamp for the next "run()" call.
                         self.timer = Timer(timeout, self.run)
                         self.timer_timestamp = timestamp
 
-                        if (self.log_handler is not None): self.log_handler.debug("{0!r} waits for {1} seconds", self, timeout, context = "pas_timed_tasks")
+                        if (self._log_handler is not None): self._log_handler.debug("{0!r} waits for {1} seconds", self, timeout, context = "pas_timed_tasks")
                         self.timer.start()
                     else:
-                        if (self.log_handler is not None): self.log_handler.debug("{0!r} continues with the next step", self, context = "pas_timed_tasks")
+                        if (self._log_handler is not None): self._log_handler.debug("{0!r} continues with the next step", self, context = "pas_timed_tasks")
 
                         thread = Thread(target = self.run)
-                        thread.start()
                     #
                 #
             #
+
+            if (thread is not None): thread.start()
         #
     #
 #
