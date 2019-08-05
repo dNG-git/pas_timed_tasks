@@ -30,15 +30,13 @@ https://www.direct-netware.de/redirect?licenses;gpl
 #echo(__FILEPATH__)#
 """
 
-# pylint: disable=import-error, no-name-in-module
-
 from threading import Timer
 from time import time
 
-from dNG.plugins.hook import Hook
-from dNG.runtime.not_implemented_exception import NotImplementedException
-from dNG.runtime.thread import Thread
-from dNG.runtime.thread_lock import ThreadLock
+from dpt_plugins import Hook
+from dpt_runtime.not_implemented_exception import NotImplementedException
+from dpt_threading.thread import Thread
+from dpt_threading.thread_lock import ThreadLock
 
 class AbstractTimed(object):
     """
@@ -50,7 +48,7 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 :subpackage: timed_tasks
 :since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;gpl
-             GNU General Public License 2
+             GNU General Public License 2 or later
     """
 
     # pylint: disable=unused-argument
@@ -150,7 +148,7 @@ Start the timed tasks implementation.
             with self.lock:
                 # Thread safety
                 if (not self.timer_active):
-                    Hook.register_weakref("dNG.pas.Status.onShutdown", self.stop)
+                    Hook.register_weakref("pas.Application.onShutdown", self.stop)
 
                     self.timer_active = True
                     self.timer_timestamp = -1
@@ -175,7 +173,7 @@ Stop the timed tasks implementation.
                 if (self._log_handler is not None): self._log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
                 self.timer_active = False
-                Hook.unregister("dNG.pas.Status.onShutdown", self.stop)
+                Hook.unregister("pas.Application.onShutdown", self.stop)
             #
 
             if (self.timer is not None and self.timer.is_alive()): self.timer.cancel()
