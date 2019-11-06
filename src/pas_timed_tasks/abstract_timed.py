@@ -53,6 +53,12 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 
     # pylint: disable=unused-argument
 
+    __slots__ = [ "__weakref__", "_lock", "_log_handler", "timer", "_timer_active", "timer_timestamp" ]
+    """
+python.org: __slots__ reserves space for the declared variables and prevents
+the automatic creation of __dict__ and __weakref__ for each instance.
+    """
+
     def __init__(self):
         """
 Constructor __init__(AbstractTimed)
@@ -60,7 +66,7 @@ Constructor __init__(AbstractTimed)
 :since: v1.0.0
         """
 
-        self.lock = ThreadLock()
+        self._lock = ThreadLock()
         """
 Thread safety lock
         """
@@ -73,7 +79,7 @@ happened.
         """
 "Timer" instance
         """
-        self.timer_active = False
+        self._timer_active = False
         """
 UNIX timestamp of the next element
         """
@@ -102,7 +108,7 @@ Returns true if the timed tasks implementation has been started.
 :since:  v1.0.0
         """
 
-        return self.timer_active
+        return self._timer_active
     #
 
     @property
@@ -125,11 +131,11 @@ Timed task execution
 :since: v1.0.0
         """
 
-        if (self.timer_active):
-            with self.lock:
+        if (self._timer_active):
+            with self._lock:
                 # Thread safety
                 self.timer_timestamp = -1
-                if (self.timer_active): self.update_timestamp()
+                if (self._timer_active): self.update_timestamp()
             #
         #
     #
@@ -144,13 +150,13 @@ Start the timed tasks implementation.
 :since: v1.0.0
         """
 
-        if (not self.timer_active):
-            with self.lock:
+        if (not self._timer_active):
+            with self._lock:
                 # Thread safety
-                if (not self.timer_active):
+                if (not self._timer_active):
                     Hook.register_weakref("pas.Application.onShutdown", self.stop)
 
-                    self.timer_active = True
+                    self._timer_active = True
                     self.timer_timestamp = -1
                     self.update_timestamp()
                 #
@@ -168,11 +174,11 @@ Stop the timed tasks implementation.
 :since: v1.0.0
         """
 
-        with self.lock:
-            if (self.timer_active):
+        with self._lock:
+            if (self._timer_active):
                 if (self._log_handler is not None): self._log_handler.debug("#echo(__FILEPATH__)# -{0!r}.stop()- (#echo(__LINE__)#)", self, context = "pas_timed_tasks")
 
-                self.timer_active = False
+                self._timer_active = False
                 Hook.unregister("pas.Application.onShutdown", self.stop)
             #
 
@@ -193,14 +199,14 @@ Update the timestamp for the next "run()" call.
 
         if (self._log_handler is not None): self._log_handler.debug("#echo(__FILEPATH__)# -{0!r}.update_timestamp({1})- (#echo(__LINE__)#)", self, timestamp, context = "pas_timed_tasks")
 
-        if (self.timer_active):
+        if (self._timer_active):
             thread = None
 
-            with self.lock:
+            with self._lock:
                 # Thread safety
                 timeout = -1
 
-                if (self.timer_active):
+                if (self._timer_active):
                     if (timestamp < 0): timestamp = self._next_update_timestamp
 
                     if (timestamp > 0):
