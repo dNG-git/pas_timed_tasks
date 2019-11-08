@@ -30,4 +30,4 @@ https://www.direct-netware.de/redirect?licenses;gpl
 #echo(__FILEPATH__)#
 """
 
-from .abstract_timed import AbstractTimed
+from .timed_tasks_mixin import TimedTasksMixin

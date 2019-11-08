@@ -38,7 +38,7 @@ from dpt_runtime.not_implemented_exception import NotImplementedException
 from dpt_threading.thread import Thread
 from dpt_threading.thread_lock import ThreadLock
 
-class AbstractTimed(object):
+class TimedTasksMixin(object):
     """
 Timed tasks provides an abstract, time ascending sorting scheduler.
 
@@ -53,7 +53,11 @@ Timed tasks provides an abstract, time ascending sorting scheduler.
 
     # pylint: disable=unused-argument
 
-    __slots__ = [ "__weakref__", "_lock", "_log_handler", "timer", "_timer_active", "timer_timestamp" ]
+    _mixin_slots_ = [ "_lock", "_log_handler", "timer", "_timer_active", "timer_timestamp" ]
+    """
+Additional __slots__ used for inherited classes.
+    """
+    __slots__ = [ ]
     """
 python.org: __slots__ reserves space for the declared variables and prevents
 the automatic creation of __dict__ and __weakref__ for each instance.
@@ -61,7 +65,7 @@ the automatic creation of __dict__ and __weakref__ for each instance.
 
     def __init__(self):
         """
-Constructor __init__(AbstractTimed)
+Constructor __init__(TimedTasksMixin)
 
 :since: v1.0.0
         """
@@ -91,7 +95,7 @@ UNIX timestamp of the next element
 
     def __del__(self):
         """
-Destructor __del__(AbstractTimed)
+Destructor __del__(TimedTasksMixin)
 
 :since: v1.0.0
         """
